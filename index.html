@@ -6,6 +6,85 @@
   <title>Document</title>
 </head>
 <body>
+<style>
+
+</style>  
+
+<div id="skin-mbti">
+</div>
+  <script src="./data.js"></script>
+  <script>
+  console.log(QUESTION_DATA,QUESTION_SCORE[0])
+  const mbtiWrap = document.getElementById('skin-mbti');
+  //값이있는지 확인 // 쿠키 와비교 // init 함수 만들기 
+
+  //폼생성 
+  const createForm = ({section_id, section_name, data}, wrap) => {
+    var html = "";
+    html += `<h2>${section_name}</h2>`;
+    html += `<form id=${section_name}>`;
+
+    data.forEach(({id, question, option}) => {
+        html += "<ul>";
+        html += `<li><strong>${id+"."+question}</strong></li>`;
+
+        option.forEach(({no, option_text}) => {
+          html += "<li>";
+          html += `<label>${option_text}`;
+          html += `<input type="radio" value="${no}" name="${section_id+"_"+id}"/>`;
+          html += "</label>";
+          html += "</li>";
+        })
+        html += "</ul>";
+    })
+    html += "</form>";
+    wrap.insertAdjacentHTML('beforeend',html);
+
+    return document.getElementById(section_name)
+  }
+
+  const form = createForm(QUESTION_DATA[0],mbtiWrap)
+  //검사 완료 쿠키 - 검사도중 쿠키 날리고 결과 쿠키만 일정시간남김 - 메인 갈때 쿠키있으면 (결과확인, 다시 테스트 링크)
+  //검사도중 쿠키 -  체크박스 클릭때마다 쿠키 덮어쓰면서 문항저장함 // 기간은 1-2시간정도 남기기 (진행중인 검사 , 다시 테스트 링크)
+  // 결과 페이지 - 마지막 값을 get 데이터로 넘겨서 파라미터로 받은값에따라서 결과 내용 출력하기 
+  // 링크도 동일하게 링크를 객체에 담던지 , 링크경로를 포멧팅하던지 하기
+  //각 섹션에 점수 기준 객체 만들기;
+
+  //쿠키로 보내고 ; 렌더링할때 쿠키 확인
+    var saveData = []
+    form.addEventListener('change', e=> {
+      var key = e.target?.name;
+      var value = e.target?.value;
+
+      if(e.target.type === "radio" && key && value){
+        if(saveData.length === 0){
+          saveData.push({[key] : value})
+          return 
+        } 
+        else {
+          const checkSameIdx = saveData.findIndex(data => data.hasOwnProperty(key))
+          if(checkSameIdx !== -1){
+            (saveData[checkSameIdx])[key] = value;
+          } else {
+            saveData.push({[key] : value})
+          }
+        }
+        const mapQuery = saveData.map(save =>Object.entries(save).join('=').replace(/\,/ig,"=")).join('&');
+        console.log(mapQuery)
+
+        //
+        console.log(saveData)
+      }
+    })
+
+        
+
+
   
+
+
+
+
+  </script>
 </body>
 </html>
