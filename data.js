@@ -1,6 +1,30 @@
+const QUESTION_SCORE = {
+  1 : 1,
+  2 : 2,
+  3 : 3,
+  4 : 4,
+  5 : 2.5
+}
+
+const QUESTION_PROGRESS_STATE = {
+  OD : false,
+  SR : false,
+  PN : false,
+  WT : false,
+  reset : function(){for (key in this) this[key] = false},
+}
+
+
+const QUESTION_TYPE = {
+  OD : (score)=>(score >= 27 ? "O" : "D") ,
+  SR : (score)=>(score >= 30 ? "S" : "R"),
+  PN : (score)=>(score >= 31 ? "P" : "N"),
+  WT : (score)=>(score >= 41 ? "W" : "T"),
+}
+
 const QUESTION_DATA = [
   {
-    section_id:"A",
+    section_id:"OD",
     section_name : "section_name_A",
     data : [
       {
@@ -266,7 +290,7 @@ const QUESTION_DATA = [
     ]
   },
   {
-    section_id:"B",
+    section_id:"SR",
     section_name : "section_name_B",
     data : [
       {
@@ -532,7 +556,7 @@ const QUESTION_DATA = [
     ]
   },
   {
-    section_id:"C",
+    section_id:"PN",
     section_name : "section_name_C",
     data : [
       {
@@ -798,7 +822,7 @@ const QUESTION_DATA = [
     ]
   },
   {
-    section_id:"D",
+    section_id:"WT",
     section_name : "section_name_D",
     data : [
       {
@@ -1065,10 +1089,3 @@ const QUESTION_DATA = [
   },
 ]
 
-const QUESTION_SCORE = {
-  1 : 1,
-  2 : 2,
-  3 : 3,
-  4 : 4,
-  5 : 2.5
-}
