@@ -11,9 +11,27 @@ const QUESTION_PROGRESS_STATE = {
   SR : false,
   PN : false,
   WT : false,
-  reset : function(){for (key in this) this[key] = false},
+  reset : function(){for (key in this){key !== "reset" && (this[key] = false)}},
 }
 
+const QUESTION_TYPE_IMAGE = {
+  DRPT : "1image.jpg",
+  DRNT : "2image.jpg",
+  DSPT : "3image.jpg",
+  DSNT : "4image.jpg",
+  DRPW : "5image.jpg",
+  DRNW : "6image.jpg",
+  DSPW : "7image.jpg",
+  DSNW : "8image.jpg",
+  ORPT : "9image.jpg",
+  ORNT : "10image.jpg",
+  OSPT : "11image.jpg",
+  OSNT : "12image.jpg",
+  ORPW : "13image.jpg",
+  ORNW : "14image.jpg",
+  OSPW : "15image.jpg",
+  OSNW : "16image.jpg"
+}
 
 const QUESTION_TYPE = {
   OD : (score)=>(score >= 27 ? "O" : "D") ,

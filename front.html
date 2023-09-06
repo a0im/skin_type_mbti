@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="front-page">
+    <h1>start</h1>
+    <div class="before-result"></div>
+    <ul class="front-page__btns"></ul>
+  </div>
+
+  <script src="./data.js"></script>
+  <script>
+  const setCookie = (name,value,m) => {
+    var date = new Date();
+    date.setTime(date.getTime() + m * 60 * 1000);
+    document.cookie = name + "=" + encodeURI(value) +  ';expires=' + date.toUTCString() + ';path=/';
+  }
+
+  //쿠키 삭제
+  const delCookie = (Name) => {
+    var expireDate = new Date();
+    expireDate.setDate(expireDate.getDate() - 1);
+    document.cookie = Name + "= " + "; expires=" + expireDate.toGMTString() + "; path=/";
+  }
+
+  //쿠키 가져오기
+  const getCookie = (name) => {
+    var x, y;
+    var val = document.cookie.split(';');
+    for (var i = 0; i < val.length; i++) {
+        x = val[i].substr(0, val[i].indexOf('='));
+        y = val[i].substr(val[i].indexOf('=') + 1);
+        x = x.replace(/^\s+|\s+$/g, '');
+        if (x == name) {
+            return unescape(y);
+        }
+    }
+  }
+
+
+   //시작 페이지 버튼 생성
+  const createStartBtn = (btnBox,resultBox) => {
+    var html = "";
+
+    var page = location.protocol +"/"+ location.hostname.replace(/\/index.html/ig,"")
+      if(getCookie('skintype')){
+        html += `<li><a href=${page + "/test.html?state=true"} >진행중인 검사 이어하기</a></li>`
+      } 
+      if (getCookie('resulttype')) {
+        
+        //여기 결과 이미지  객체로 넣어서 보내주면댐 
+        var path = 'skin-mbti/result?=' + getCookie('resulttype');
+        var resultImg = `<a><img src=${QUESTION_TYPE_IMAGE[getCookie('resulttype')].toUpperCase()}/></a>`
+
+        html += `<li><a href=${page + path}>${getCookie('resulttype')}타입 관련상품 보러가기</a></li>`
+        resultBox.insertAdjacentHTML('beforeend',resultImg)
+      }
+
+      html += `<li><a href=${page + "/test.html"}>새롭게 진행하기</a></li>`
+
+      btnBox.insertAdjacentHTML('beforeend',html);
+  }
+  createStartBtn(document.querySelector('.front-page__btns'),document.querySelector('.before-result'))
+
+
+
+  </script>
+</body>
+</html>
