@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+
+  <div id="result-area"></div>
+  <div><a href="/front.html">처음 페이지 돌아가기</a></div>
+  <div>링크복사</div>
+
+  <script>
+    const urlParams = new URLSearchParams(location.search);
+    
+    for (const [key, value] of urlParams.entries()) {
+        console.log(key,value)
+
+        if(key === "type"){
+          document.getElementById('result-area').textContent = '결과 : ' +  value;
+        }
+      }
+
+
+/*
+async function copy(){
+      var url = location.href;
+
+      try{
+        await navigator.clipboard.writeText(location.href)
+        // 클립보드에 write이 성공했을 때
+        success();
+      }catch{
+        
+        // 클립보드에 write이 실패했을 때
+        fail();
+  } 
+  
+}
+*/
+
+
+      //console.log()
+      
+      //.then((res) => {console.log(res)})
+  </script>
+</body>
+</html>

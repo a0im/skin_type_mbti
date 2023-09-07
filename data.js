@@ -1,3 +1,14 @@
+const COOKIE_OPTION = {
+  history : {
+    name : "history-data",
+    time : 2
+  },
+  result : {
+    name : "result-type",
+    time : 5
+  }
+}
+
 const QUESTION_SCORE = {
   1 : 1,
   2 : 2,
@@ -11,7 +22,7 @@ const QUESTION_PROGRESS_STATE = {
   SR : false,
   PN : false,
   WT : false,
-  reset : function(){for (key in this){key !== "reset" && (this[key] = false)}},
+  //reset : function(){for (key in this){key !== "reset" && (this[key] = false)}},
 }
 
 const QUESTION_TYPE_IMAGE = {

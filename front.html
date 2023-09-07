@@ -47,22 +47,32 @@
     var html = "";
 
     var page = location.protocol +"/"+ location.hostname.replace(/\/index.html/ig,"")
-      if(getCookie('skintype')){
-        html += `<li><a href=${page + "/test.html?state=true"} >진행중인 검사 이어하기</a></li>`
+      if(getCookie(COOKIE_OPTION.history.name)){
+        //html += `<li><a href=${page + "/test.html?state=true"} >진행중인 검사 이어하기</a></li>`
+        html += `<li><a href=${"/test.html"} >진행중인 검사 이어하기</a></li>`
       } 
-      if (getCookie('resulttype')) {
-        
-        //여기 결과 이미지  객체로 넣어서 보내주면댐 
-        var path = 'skin-mbti/result?=' + getCookie('resulttype');
-        var resultImg = `<a><img src=${QUESTION_TYPE_IMAGE[getCookie('resulttype')].toUpperCase()}/></a>`
+      if (getCookie(COOKIE_OPTION.result.name)) {
+        var resultType = getCookie(COOKIE_OPTION.result.name);
+        var path = '/result.html/type?=' + resultType;
+        var resultImg = `<a><img src=${QUESTION_TYPE_IMAGE[resultType].toUpperCase()}/></a>`
+        html += `<li><a href=${'/result.html?type=' + resultType}>${getCookie(COOKIE_OPTION.result.name)}타입 관련상품 보러가기</a></li>`
 
-        html += `<li><a href=${page + path}>${getCookie('resulttype')}타입 관련상품 보러가기</a></li>`
+        //html += `<li><a href=${page + path}>${getCookie('resulttype')}타입 관련상품 보러가기</a></li>`
         resultBox.insertAdjacentHTML('beforeend',resultImg)
       }
 
-      html += `<li><a href=${page + "/test.html"}>새롭게 진행하기</a></li>`
+      //html += `<li><a href=${page + "/test.html?state=false"}>새롭게 진행하기</a></li>`
+      html += `<li class="new-test"><a href="javascript:void(0)">새롭게 진행하기</a></li>`
 
       btnBox.insertAdjacentHTML('beforeend',html);
+
+
+      document.querySelector('.new-test').addEventListener('click',()=>{
+        delCookie(COOKIE_OPTION.history.name)
+        delCookie(COOKIE_OPTION.result.name)
+        location.href = '/test.html'
+      }) 
+
   }
   createStartBtn(document.querySelector('.front-page__btns'),document.querySelector('.before-result'))
 

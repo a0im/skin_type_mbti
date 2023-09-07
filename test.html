@@ -7,7 +7,20 @@
 </head>
 <body>
 <style>
+
+li{list-style:none;}
+ul {margin: 0 0 20px 0; padding: 0; }
+#stage-state {width: 100%; position: fixed; top: 0; left: 0; z-index: 30; display: flex; gap: 10px; height: 40px; align-items: center; justify-content: center; background-color: #fff;}
+#skin-mbti {width: 80%; max-width: 1200px; margin: 0 auto;}
+#skin-mbti h2 {text-align: center; color: #007bff; font-size: 26px;}
+#skin-mbti .section-box ul li {margin-bottom: 5px; position: relative; text-align: center;}
+#skin-mbti .section-box ul li strong {font-size: 22px; margin-bottom: 25px; display: block;}
+#skin-mbti .section-box ul li label{margin: 0 auto; display: block;background-color: #efefef; width: 300px; height: 36px;text-align: center; border-radius: 15px; line-height: 36px;}
+#skin-mbti .section-box ul li input {position: absolute; }
+#skin-mbti .section-box ul li input:checked + label{ background-color: #007bff; color: #fff; font-weight: 600;}
+#skin-mbti .section-box .submit {border: 1px solid #696969; display: block; width: 300px; height: 33px; border-radius: 15px; margin: 0 auto;}
 .section_name_A__list input:radio:checked {background-color: yellow;}
+.done {height: 0px; overflow: hidden;}
 </style>  
 
 
@@ -16,12 +29,12 @@
 <hr>
 <ul id="stage-state"></ul>
 <div id="skin-mbti"></div>
+
+<br>
+<br>
 <button class="next">next</button>
 <button class="del">delcookie</button>
 <button class="get">getcookie</button>
-
-
-
 
 
   <script src="./data.js"></script>
@@ -34,6 +47,7 @@
   //각 섹션에 점수 기준 객체 만들기;
   //쿠키로 보내고 ; 렌더링할때 쿠키 확인
   console.log(QUESTION_DATA)
+
 
   /*---------------------------------------쿠키----------------------------------------------*/
   //쿠키 생성
@@ -77,12 +91,14 @@
 
     return {
       update : (id = "OD") => {
-        var currntStageIdx = data.findIndex(({section_id})=> section_id === id)
-        var stages = [...stageBox.children]
+        console.log(id)
+        var currntStageIdx = data.findIndex(({section_id})=> section_id === id);
+        var stages = [...stageBox.children];
 
+        stages.forEach(li => li.style.background = "#fff")
         stages.forEach((li,i) => {
-          if (i <= currntStageIdx) {
-            li.style.background = "red"
+          if (i <= currntStageIdx - 1) {
+            li.style.background = "#007bff";
           }
         })
       }
@@ -93,8 +109,8 @@
   //폼 요소 생성 
   const createForm = ({section_id, section_name, data}, wrap) => {
     var html = "";
-    html += `<h2>${section_name}</h2>`;
-    html += `<div id=${section_name}>`;
+    html += `<h2 class="stage-title" data-id=${section_id}>${section_name}</h2>`;
+    html += `<section id=${section_id + "section"} class="section-box">`;
 
     data.forEach(({id, question, option}) => {
         html += `<ul class=${section_name + "__" + "list"}>`;
@@ -102,33 +118,36 @@
 
         option.forEach(({no, option_text}) => {
           html += "<li>";
-          html += `<label>${option_text}`;
-          html += `<input type="radio" value="${no}" name="${section_id+id}"/>`;
-          html += "</label>";
+          html += `<input id=${section_id+id+no} type="radio" value="${no}" name="${section_id+id}" hidden/>`;
+          html += `<label for=${section_id+id+no}>${option_text}</label>`;
+          //html += "";
           html += "</li>";
         })
         html += "</ul>";
     })
     html += `<button class='submit' data-id=${section_id}>submit</button>`
-    html += "</div>";
+    html += "</section>";
     wrap.insertAdjacentHTML('beforeend',html);
-    return document.getElementById(section_name);
+
+    return document.getElementById(section_id + "section");
   }
   const mbtiWrap = document.getElementById('skin-mbti');
-  const form = createForm(QUESTION_DATA[0],mbtiWrap)
+  //const form = createForm(QUESTION_DATA[0],mbtiWrap)
 
 
-
- /*-----------------------------------------------------------------------------------*/
+/*---------------------------------------기능함수-----------------------------------------*/
 
 //쿠키 데이터 담아서 보내기 
   const sendParamsToCookie = () => {
-    var params = new URLSearchParams();
+    var isHistory = getCookie(COOKIE_OPTION.history.name) 
+    var params = isHistory ?  new URLSearchParams(isHistory) : new URLSearchParams() 
+
     return (key , value) => {
-      if(!key || !value) return 
+      if(!key || !value) return
+
       params.set(key,value)
       params.sort();
-      setCookie("skintype",params.toString(),1)
+      setCookie(COOKIE_OPTION.history.name ,params.toString(), COOKIE_OPTION.history.time)
     }
   }
   let sendParams = sendParamsToCookie()
@@ -141,6 +160,16 @@
     return checkSelect
   }
 
+  //진행중 쿠키에 기록된 내용 체크
+  const recoveryChecked = (cookieData) => {
+    var params = new URLSearchParams(cookieData);
+
+      for (const [key, value] of params.entries()) {
+        var inputs = [...document.getElementsByName(key)]
+        var checkTarget = inputs.find(input => input.value === value)
+        checkTarget.checked = true
+      }
+  }
 
   //점수 계산
   const calcScore = ({section_id ,data}) =>{
@@ -152,101 +181,137 @@
   console.log("타입 :",QUESTION_TYPE[section_id](score),"--","점수 :",score)//result 
 
   return score
+  }
+
+  //요소로 스크롤
+  const scrollIntoSection = (id) => {
+    var el = document.getElementById(id + "section")
+    el.scrollIntoView({ behavior: "smooth", block: "start", inline: "center" });
+  }
+
+
+/*----------------------------------분기처리-------------------------------------------------*/
+//로드될때 체크 여부 분기 
+const loadBranch = () => {
+  var getHistory = getCookie(COOKIE_OPTION.history.name);
+
+  if (getHistory) {
+    var score = new URLSearchParams(getHistory);
+
+    for (const [key] of score.entries()) {
+      QUESTION_PROGRESS_STATE[key.replace(/[0-9]/ig,"")] = true;
+    }
+
+    var lastSection;
+    QUESTION_DATA.forEach((data , i) => {
+      if(QUESTION_PROGRESS_STATE[data.section_id]){
+        var form = createForm(data,mbtiWrap);
+        form.classList.add("done")
+        lastSection = form
+        data.section_id + "section"
+        stageBar.update(data.section_id)
+      }
+    })
+    
+    lastSection.classList.remove("done")
+    recoveryChecked(getHistory)
+    console.log("load save")
+  }
+  else {
+    createForm(QUESTION_DATA[0],mbtiWrap)
+    console.log("new")
+  }
+}
+loadBranch()
+
+
+//제목버튼 분기
+const btnBranch = (e) => {
+    if (e.target.className !== "stage-title")  return
+
+    var boxes = document.querySelectorAll('.section-box')
+
+    if (boxes.length > 1) {
+      boxes.forEach(box => {
+        if (box.id.includes(e.target.dataset.id + "section")) {
+          stageBar.update(e.target.dataset.id)
+          box.classList.remove('done')
+        }
+        else{
+          box.classList.add('done')
+        }
+      })
+    }
 }
 
-//core fn
-var resultT = ""
-const branchStage = (e) => {
+//스테이지 완료 버튼 누를때 분기
+const submitBranch = (e) => {
   if(e.target.tagName !== "BUTTON") return
   var submitId = e.target.dataset.id;
+  var finish = false;
 
   QUESTION_DATA.forEach((data,i,arr) => {
     if(submitId === data.section_id && checkPass(data)){
+      //전부 체크
+      var section = document.getElementById(data.section_id + "section")
+      var nextSection = document.getElementById(arr[i + 1]?.section_id + "section")
+      section.classList.add("done")
       
-      resultT += QUESTION_TYPE[data.section_id](calcScore(data)) //임시
-      QUESTION_PROGRESS_STATE.reset();
-      QUESTION_PROGRESS_STATE[submitId] = true 
-      stageBar.update(submitId)
 
-
-
-      
-      if (i < arr.length - 1) {
-        createForm(arr[i+1],mbtiWrap);
+      if (i < arr.length - 1 && !nextSection) {
+        var newSection = createForm(arr[i+1],mbtiWrap);
+        console.log(arr[i+1].section_id)
+        scrollIntoSection(arr[i+1].section_id)
+        stageBar.update(arr[i+1].section_id)
+      } 
+      else if(nextSection){
+          nextSection.classList.remove('done')
+          stageBar.update(arr[i + 1].section_id)
       }
 
       if (i === arr.length - 1) {
-        console.log("끝");
-
-        delCookie("skintype")
-        setCookie("resulttype",resultT,5)
-        //점수랑 등급 쿼리스트링에 붙여서 보내고, 쿠키로도 저장하기 
-        location.href = `/?result=${resultT}`;
+        finish = true //끝
+        return
       }
 
-      console.log(QUESTION_PROGRESS_STATE)
     } 
     else if(submitId === data.section_id && !checkPass(data)){
-
       console.log("error")
-
     }
+
   })
-}
+
+  if(finish){         //점수랑 등급 쿼리스트링에 붙여서 보내고, 쿠키로도 저장하기 
+      var type = "";
+      var score = new URLSearchParams();
+      QUESTION_DATA.forEach(data =>{
+        type += QUESTION_TYPE[data.section_id](calcScore(data)) //임시
+        score.set(data.section_id,calcScore(data));
+      })
+        
+        delCookie(COOKIE_OPTION.history.name)
+        setCookie(COOKIE_OPTION.result.name, type, COOKIE_OPTION.result.time)
+        location.href = `/result.html?type=${type}&score=${score.toString()}`;
+  }
+} //submitBranch
 
 
-//이벤트 헨들러 
+/*--------------------------------------이벤트-------------------------------------------------*/
   mbtiWrap.addEventListener('change', e => {
       if(e.target.type !== "radio") return 
       sendParams(e.target.name,e.target.value)  
   })
 
-  mbtiWrap.addEventListener('click',branchStage)
+  mbtiWrap.addEventListener('click', e => {
+    btnBranch(e)
+    submitBranch(e)
+  })
+
 
   //test 
 document.querySelector('.del').addEventListener('click',()=>{delCookie('skintype')})
 document.querySelector('.get').addEventListener('click',()=>{console.log(getCookie('skintype'))})
 
-
-
-  
-  /*
-  if (id === 'OD' && checkAllselect(QUESTION_DATA[0])) {
-    calcScore(QUESTION_DATA[0],'')
-    createForm(QUESTION_DATA[1],mbtiWrap) 
-  }
-
-  if (id === 'SR'  && checkAllselect(QUESTION_DATA[1])) {
-    calcScore(QUESTION_DATA[1],'') 
-    createForm(QUESTION_DATA[2],mbtiWrap) 
-  }
-
-  if (id === 'PN'   && checkAllselect(QUESTION_DATA[2])) {
-    calcScore(QUESTION_DATA[2],'')
-    createForm(QUESTION_DATA[3],mbtiWrap)
-  }
-
-  if (id === 'WT'   && checkAllselect(QUESTION_DATA[3])) {
-    calcScore(QUESTION_DATA[3],'')
-  }
-  */
-
-  /*
-      params.forEach((v,k)=>{
-        checked.push({[k]:v})
-      })
-      console.log(params.toString())
-      console.log(checked)
-      */
-
-      //!params.has(key) ? params.append(key,value) : 
-         //const checkSameIdx = saveData.findIndex(data => data.hasOwnProperty(key))
-        //checkSameIdx === -1
-        //saveData.push({[key] : value})
-        //saveData[checkSameIdx][key] = value;
-        //const mapQuery = saveData.map(save =>Object.entries(save).join('=').replace(/\,/ig,"=")).join('&');
-
-        
   </script>
 </body>
 </html>
