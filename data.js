@@ -54,37 +54,37 @@ const QUESTION_TYPE = {
 const QUESTION_DATA = [
   {
     section_id:"OD",
-    section_name : "section_name_A",
+    section_name : "PART1",
     data : [
       {
         id:1,
-        question : "test_inquery_id_1",
+        question : "클렌징 후에 아무것도 바르지않고 2~3시간 후에 밝은 빛 아래에서 거울을 보세요 이마와 볼이 어떻다고 느껴지십니까?",
         option  : [
           {
             no:1,
-            option_text: "option-text-1"
+            option_text: "매우 거칠고 비석같이 느껴집니다"
           },
           {
             no:2,
-            option_text: "option-text-2"
+            option_text: "당깁니다"
           },
           {
             no:3,
-            option_text: "option-text-3"
+            option_text: "당기지않고 건조해보이고 번들거리지 않습니다"
           },
           {
             no:4,
-            option_text: "option-text-4"
+            option_text: "밝은 빛에 반사 되는듯이 번들거립니다"
           },
           {
             no:5,
-            option_text: "option-text-5"
+            option_text: "어쩌구저ㅈ쩌구"
           },
         ]
       },
       {
         id:2,
-        question : "test_inquery_id_2",
+        question : "PART2",
         option  : [
           {
             no:1,
@@ -320,7 +320,7 @@ const QUESTION_DATA = [
   },
   {
     section_id:"SR",
-    section_name : "section_name_B",
+    section_name : "PART2",
     data : [
       {
         id:1,
@@ -586,7 +586,7 @@ const QUESTION_DATA = [
   },
   {
     section_id:"PN",
-    section_name : "section_name_C",
+    section_name : "PART3",
     data : [
       {
         id:1,
@@ -852,7 +852,7 @@ const QUESTION_DATA = [
   },
   {
     section_id:"WT",
-    section_name : "section_name_D",
+    section_name : "PART4",
     data : [
       {
         id:1,

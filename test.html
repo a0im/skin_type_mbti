@@ -7,20 +7,22 @@
 </head>
 <body>
 <style>
-
+html {scroll-behavior: smooth } 
 li{list-style:none;}
 ul {margin: 0 0 20px 0; padding: 0; }
 #stage-state {width: 100%; position: fixed; top: 0; left: 0; z-index: 30; display: flex; gap: 10px; height: 40px; align-items: center; justify-content: center; background-color: #fff;}
 #skin-mbti {width: 80%; max-width: 1200px; margin: 0 auto;}
+#skin-mbti .question-box ul{border: #333 1px solid; padding: 25px 15px ; opacity: 0.3;}
 #skin-mbti h2 {text-align: center; color: #007bff; font-size: 26px;}
-#skin-mbti .section-box ul li {margin-bottom: 5px; position: relative; text-align: center;}
-#skin-mbti .section-box ul li strong {font-size: 22px; margin-bottom: 25px; display: block;}
-#skin-mbti .section-box ul li label{margin: 0 auto; display: block;background-color: #efefef; width: 300px; height: 36px;text-align: center; border-radius: 15px; line-height: 36px;}
-#skin-mbti .section-box ul li input {position: absolute; }
-#skin-mbti .section-box ul li input:checked + label{ background-color: #007bff; color: #fff; font-weight: 600;}
-#skin-mbti .section-box .submit {border: 1px solid #696969; display: block; width: 300px; height: 33px; border-radius: 15px; margin: 0 auto;}
+#skin-mbti .question-box ul li {margin-bottom: 5px; position: relative; text-align: left; }
+#skin-mbti .question-box ul li strong {font-size: 20px; margin-bottom: 25px; display: block;color: #007bff;}
+#skin-mbti .question-box ul li label{ display: block;background-color:transparent; width: auto; height: 36px;text-align: left; line-height: 38px; padding-left: 20px;}
+#skin-mbti .question-box ul li input {position: absolute; }
+#skin-mbti .question-box ul li input:checked + label{ background-color: #007bff; color: #fff; font-weight: 600;}
+#skin-mbti .question-box .submit {border: 1px solid #696969; display: block; width: 100%; height: 33px; margin: 0 auto;}
 .section_name_A__list input:radio:checked {background-color: yellow;}
 .done {height: 0px; overflow: hidden;}
+.transparent {opacity: 1 !important;;}
 </style>  
 
 
@@ -56,14 +58,12 @@ ul {margin: 0 0 20px 0; padding: 0; }
     date.setTime(date.getTime() + m * 60 * 1000);
     document.cookie = name + "=" + encodeURI(value) +  ';expires=' + date.toUTCString() + ';path=/';
   }
-
   //쿠키 삭제
   const delCookie = (Name) => {
     var expireDate = new Date();
     expireDate.setDate(expireDate.getDate() - 1);
     document.cookie = Name + "= " + "; expires=" + expireDate.toGMTString() + "; path=/";
   }
-
   //쿠키 가져오기
   const getCookie = (name) => {
     var x, y;
@@ -109,31 +109,31 @@ ul {margin: 0 0 20px 0; padding: 0; }
   //폼 요소 생성 
   const createForm = ({section_id, section_name, data}, wrap) => {
     var html = "";
+    html += `<section id=${section_id + "section"}>`
     html += `<h2 class="stage-title" data-id=${section_id}>${section_name}</h2>`;
-    html += `<section id=${section_id + "section"} class="section-box">`;
+    html += `<div class="question-box" class="section-box">`;
 
-    data.forEach(({id, question, option}) => {
-        html += `<ul class=${section_name + "__" + "list"}>`;
+    data.forEach(({id, question, option},i) => {
+
+    
+        html += `<ul class=${"ul-"+section_id+id}>`;
         html += `<li><strong>${id+"."+question}</strong></li>`;
 
         option.forEach(({no, option_text}) => {
           html += "<li>";
           html += `<input id=${section_id+id+no} type="radio" value="${no}" name="${section_id+id}" hidden/>`;
           html += `<label for=${section_id+id+no}>${option_text}</label>`;
-          //html += "";
           html += "</li>";
         })
         html += "</ul>";
     })
-    html += `<button class='submit' data-id=${section_id}>submit</button>`
-    html += "</section>";
+    html += `<button class='submit' data-id=${section_id}>NEXT</button>`
+    html += "</div></section>";
     wrap.insertAdjacentHTML('beforeend',html);
 
     return document.getElementById(section_id + "section");
   }
-  const mbtiWrap = document.getElementById('skin-mbti');
-  //const form = createForm(QUESTION_DATA[0],mbtiWrap)
-
+ 
 
 /*---------------------------------------기능함수-----------------------------------------*/
 
@@ -151,26 +151,27 @@ ul {margin: 0 0 20px 0; padding: 0; }
     }
   }
   let sendParams = sendParamsToCookie()
-
-
   //상품 전체 체크 확인 
   const checkPass = ({section_id ,data}) => {
     var mapRadio = data.map(obj => [...document.getElementsByName(section_id + obj.id)])
     var checkSelect = mapRadio.every(radioArr => radioArr.find(radio => radio.checked === true));
+
     return checkSelect
   }
-
-  //진행중 쿠키에 기록된 내용 체크
+  //진행중 쿠키에 기록된 내용 체크 //마지막 ul 태그 반환
   const recoveryChecked = (cookieData) => {
     var params = new URLSearchParams(cookieData);
 
+      var lastTarget
       for (const [key, value] of params.entries()) {
         var inputs = [...document.getElementsByName(key)]
         var checkTarget = inputs.find(input => input.value === value)
         checkTarget.checked = true
+        lastTarget = checkTarget;
       }
-  }
 
+      return lastTarget.parentElement.parentElement
+  }
   //점수 계산
   const calcScore = ({section_id ,data}) =>{
   var mapRadio = data.map(obj => [...document.getElementsByName(section_id + obj.id)])
@@ -182,20 +183,47 @@ ul {margin: 0 0 20px 0; padding: 0; }
 
   return score
   }
-
-  //요소로 스크롤
-  const scrollIntoSection = (id) => {
-    var el = document.getElementById(id + "section")
-    el.scrollIntoView({ behavior: "smooth", block: "start", inline: "center" });
+  //요소 맨위로 스크롤
+  const scrollIntoSectionTop = (el) => {
+    if(!el) return
+    var stickyH = document.getElementById('stage-state').offsetHeight;
+    var targetY = el.offsetTop;
+    window.scrollTo(0,targetY - stickyH);
+  }
+  //요소 중심으로 스크롤
+  const scrollIntoSectionMiddle= (el) => {
+    if(!el) return
+    var stickyH = document.getElementById('stage-state').offsetHeight;
+    var targetHalf = el.offsetHeight / 2;
+    var targetY = el.offsetTop;
+    var screenHalf = window.innerHeight / 2;
+    window.scrollTo(0,targetY + targetHalf - stickyH - screenHalf);
+  }
+  //opacity 토글 
+  const toggleOpacity = (el) => {
+    var uls = [...el.parentElement.children]
+    uls.forEach(ul => ul.classList.remove('transparent'))
+    el.classList.add('transparent')
+  }
+  //가장 근접한 체크안된 문항 요소 반환 
+  const focusLastEl = (ul) => {
+    var uls = [...ul.parentElement.children]
+    var lastEl = uls.find((ul,i) => {
+      var inputs = [...ul.querySelectorAll('input')]
+      return inputs.every(input =>input.checked === false)
+    })
+    return lastEl
   }
 
-
+/*DOM-root --------------------------------------------------------------------------------*/
+  const mbtiWrap = document.getElementById('skin-mbti');
 /*----------------------------------분기처리-------------------------------------------------*/
-//로드될때 체크 여부 분기 
-const loadBranch = () => {
+
+//load 될때 상태(저장정보)따른 분기 
+const loadBranch = _ => {
   var getHistory = getCookie(COOKIE_OPTION.history.name);
 
-  if (getHistory) {
+  if (getHistory) { //저장되어 있는 정보 있을때
     var score = new URLSearchParams(getHistory);
 
     for (const [key] of score.entries()) {
@@ -214,26 +242,30 @@ const loadBranch = () => {
     })
     
     lastSection.classList.remove("done")
-    recoveryChecked(getHistory)
+    var lastEl = recoveryChecked(getHistory)
+    scrollIntoSectionMiddle(lastEl.nextElementSibling)
+    toggleOpacity(lastEl.nextElementSibling)
     console.log("load save")
-  }
-  else {
-    createForm(QUESTION_DATA[0],mbtiWrap)
+
+  } //history
+  else { //저장 정보 X
+    var newform = createForm(QUESTION_DATA[0],mbtiWrap)
+    toggleOpacity(newform.querySelector('.question-box').firstElementChild)
     console.log("new")
   }
 }
 loadBranch()
 
 
-//제목버튼 분기
+//title 버튼 분기
 const btnBranch = (e) => {
     if (e.target.className !== "stage-title")  return
 
-    var boxes = document.querySelectorAll('.section-box')
+    var boxes = document.querySelectorAll('.question-box')
 
     if (boxes.length > 1) {
       boxes.forEach(box => {
-        if (box.id.includes(e.target.dataset.id + "section")) {
+        if (box.parentElement.id.includes(e.target.dataset.id + "section")) {
           stageBar.update(e.target.dataset.id)
           box.classList.remove('done')
         }
@@ -244,33 +276,47 @@ const btnBranch = (e) => {
     }
 }
 
-//스테이지 완료 버튼 누를때 분기
+
+//check Box 버튼 콜백 함수
+const checkBranch = (e) => {
+  if(e.target.type !== "radio") return 
+
+  const ul = document.querySelector('.ul-' + e.target.name)
+  sendParams(e.target.name,e.target.value)
+  
+  if (ul.nextElementSibling.tagName !== "button") {
+    var noneCheckedEl = focusLastEl(ul)
+    scrollIntoSectionMiddle(noneCheckedEl);
+    toggleOpacity(noneCheckedEl)
+  }
+}
+
+//NEXT 버튼 분기
 const submitBranch = (e) => {
   if(e.target.tagName !== "BUTTON") return
   var submitId = e.target.dataset.id;
   var finish = false;
-
   QUESTION_DATA.forEach((data,i,arr) => {
     if(submitId === data.section_id && checkPass(data)){
       //전부 체크
-      var section = document.getElementById(data.section_id + "section")
-      var nextSection = document.getElementById(arr[i + 1]?.section_id + "section")
+      var section = document.querySelector("#" + data.section_id + "section .question-box" )
+      var nextSection = document.querySelector( "#" + arr[i + 1]?.section_id + "section .question-box")
       section.classList.add("done")
       
+      if (i < arr.length - 1 && !nextSection) { // 다음 스테이지가 활성화 되지 않을때 
+        var newSection = createForm(arr[i + 1],mbtiWrap);
+        var firstQuestionBox  = newSection.querySelector('.question-box').firstElementChild
 
-      if (i < arr.length - 1 && !nextSection) {
-        var newSection = createForm(arr[i+1],mbtiWrap);
-        console.log(arr[i+1].section_id)
-        scrollIntoSection(arr[i+1].section_id)
-        stageBar.update(arr[i+1].section_id)
+        scrollIntoSectionTop(newSection)
+        toggleOpacity(firstQuestionBox)
+        stageBar.update(arr[i + 1].section_id)
       } 
-      else if(nextSection){
+      else if(nextSection){ // 다음 스테이지가 활성화 되어있음 
           nextSection.classList.remove('done')
           stageBar.update(arr[i + 1].section_id)
       }
-
-      if (i === arr.length - 1) {
-        finish = true //끝
+      else if (i === arr.length - 1){ //설문 끝
+        finish = true 
         return
       }
 
@@ -281,7 +327,7 @@ const submitBranch = (e) => {
 
   })
 
-  if(finish){         //점수랑 등급 쿼리스트링에 붙여서 보내고, 쿠키로도 저장하기 
+  if(finish){ //점수랑 등급 쿼리 url 붙여서 보내고, 타입 쿠키로 저장
       var type = "";
       var score = new URLSearchParams();
       QUESTION_DATA.forEach(data =>{
@@ -297,21 +343,43 @@ const submitBranch = (e) => {
 
 
 /*--------------------------------------이벤트-------------------------------------------------*/
-  mbtiWrap.addEventListener('change', e => {
-      if(e.target.type !== "radio") return 
-      sendParams(e.target.name,e.target.value)  
-  })
-
+  mbtiWrap.addEventListener('change',checkBranch)
   mbtiWrap.addEventListener('click', e => {
     btnBranch(e)
     submitBranch(e)
   })
-
-
   //test 
 document.querySelector('.del').addEventListener('click',()=>{delCookie('skintype')})
 document.querySelector('.get').addEventListener('click',()=>{console.log(getCookie('skintype'))})
 
+/*------------------------observer-------------------------------*/
+
+const ioFn = (entries) => {
+  entries.forEach((entry) => {
+    console.log(entry)
+    if (entry.intersectionRatio > 0) {
+      entry.target.classList.add("active");
+    }
+    else {
+      entry.target.classList.remove("active");
+    }
+  });
+}
+
+const ioOpt =  {
+  root: null,
+  rootMargin: "0px",
+}
+
+const questionBoxes = mbtiWrap.querySelectorAll('.question-box')
+const io = new IntersectionObserver(ioFn,ioOpt)
+questionBoxes.forEach(boxes => {
+  [...boxes.children].forEach(box => {
+    if (box.tagName === "UL") {
+    io.observe(box)
+    }
+  })
+})
   </script>
 </body>
 </html>

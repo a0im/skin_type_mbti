@@ -6,19 +6,27 @@
   <title>Document</title>
 </head>
 <body>
+  <style>
+    #result-area {margin: 0 auto; width: 80%;text-align: center;}
+    #result-area ul {padding: 0;}
+    #result-area li {list-style: none; width: 100%; background-color: #ffc107; height: 30px; line-height: 30px; margin-bottom: 10px;}
+    #result-area a {text-decoration: none; display: block; color: #333; font-weight: 600;  height: 100%;}
 
-  <div id="result-area"></div>
-  <div><a href="/front.html">처음 페이지 돌아가기</a></div>
-  <div>링크복사</div>
+  </style>
+  <div id="result-area">
+    <div class="result-img"></div>
+    <div><a href="/front.html">처음 페이지 돌아가기</a></div>
+    <ul><li>링크복사</li></ul>
+  </div>
+
 
   <script>
     const urlParams = new URLSearchParams(location.search);
-    
     for (const [key, value] of urlParams.entries()) {
         console.log(key,value)
 
         if(key === "type"){
-          document.getElementById('result-area').textContent = '결과 : ' +  value;
+          document.querySelector('.result-img').textContent = '결과 : ' +  value;
         }
       }
 
