@@ -54,6 +54,7 @@
     var html = "";
 
     var page = location.protocol +"/"+ location.hostname.replace(/\/index.html/ig,"")
+
       if(getCookie(COOKIE_OPTION.history.name)){
         //html += `<li><a href=${page + "/test.html?state=true"} >진행중인 검사 이어하기</a></li>`
         html += `<li><a href=${"/test.html"} >진행중인 검사 이어하기</a></li>`
@@ -62,8 +63,9 @@
         var resultType = getCookie(COOKIE_OPTION.result.name);
         var path = '/result.html/type?=' + resultType;
         var resultImg = `<a><img src=${QUESTION_TYPE_IMAGE[resultType].toUpperCase()}/></a>`
-        html += `<li><a href=${'/result.html?type=' + resultType}>${getCookie(COOKIE_OPTION.result.name)}타입 관련상품 보러가기</a></li>`
 
+
+        html += `<li><a href=/result.html?${btoa('type=' + resultType)}>${getCookie(COOKIE_OPTION.result.name)}타입 관련상품 보러가기</a></li>`
         //html += `<li><a href=${page + path}>${getCookie('resulttype')}타입 관련상품 보러가기</a></li>`
         resultBox.insertAdjacentHTML('beforeend',resultImg)
       }

@@ -21,7 +21,17 @@
 
 
   <script>
-    const urlParams = new URLSearchParams(location.search);
+
+function decodeUnicode(str) {
+  // Going backwards: from bytestream, to percent-encoding, to original string.
+  return decodeURIComponent(atob(str).split('').map(function (c) {
+    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+}
+
+
+    var decodeParams = atob(location.search.replace(/\?/i,""))
+    const urlParams = new URLSearchParams(decodeParams);
     for (const [key, value] of urlParams.entries()) {
         console.log(key,value)
 

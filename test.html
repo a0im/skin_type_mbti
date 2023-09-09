@@ -344,6 +344,11 @@ const stickyOpserves = (targets) => {
 const loadBranch = _ => {
   var getHistory = getCookie(COOKIE_OPTION.history.name);
 
+
+  
+
+
+
   if (getHistory) { 
     //저장 정보 O
     var history = new URLSearchParams(getHistory);
@@ -411,12 +416,17 @@ const submitBranch = (e) => {
         // 끝 결과출력
         var type = QUESTION_DATA.map(data => QUESTION_TYPE[data.section_id](calcScore(data))).join("")
         var scoreParams = new URLSearchParams();
+        var url = ""
 
         QUESTION_DATA.forEach( data => scoreParams.set(data.section_id , calcScore(data)))
         delCookie(COOKIE_OPTION.history.name);
         setCookie(COOKIE_OPTION.result.name, type, COOKIE_OPTION.result.time);
 
-        location.href = `/result.html?type=${type}&score=${scoreParams.toString()}`;
+        
+        url += '/result.html?'
+        url += btoa(`type=${type}&score=${scoreParams.toString()}`)
+
+        location.href = url;
       }
     } 
     else if(submitId === data.section_id && !checkPass(data)){
@@ -482,10 +492,6 @@ const mouseDownFn = (e) => {
       updateMoveStageBtn(nextSec)
     }
   })
-
-
-
-
 
 
 
