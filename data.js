@@ -9,6 +9,13 @@ const COOKIE_OPTION = {
   }
 }
 
+const THEME_COLOR = {
+  OD : '#007bff',
+  SR : '#28a745',
+  PN : '#ffc107',
+  WT : '#dc3545',
+}
+
 const QUESTION_SCORE = {
   1 : 1,
   2 : 2,

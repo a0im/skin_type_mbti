@@ -10,33 +10,52 @@
 html {scroll-behavior: smooth } 
 li{list-style:none;}
 ul {margin: 0 0 20px 0; padding: 0; }
-#stage-state {width: 100%; position: fixed; top: 0; left: 0; z-index: 30; display: flex; gap: 10px; height: 40px; align-items: center; justify-content: center; background-color: #fff;}
-#skin-mbti {width: 80%; max-width: 1200px; margin: 0 auto;}
+#mbti-variable{
+  --main-color : #007bff;
+}
+
+#stage-state{width: 100%; position: fixed; top: 0; left: 0; z-index: 30;background-color: #fff; height: 50px; }
+#stage-state .gauge-box {width: 100%; height: 25px;}
+#stage-state .gauge{width: 0%; height: 100%; background: var(--main-color); transition: width ease 300ms;}
+#stage-state .title-box { display: flex; gap: 10px; align-items: center; justify-content: center; }
+#skin-mbti {width: 80%; max-width: 1200px; margin: 0 auto 40px auto;}
 #skin-mbti .question-box ul{border: #333 1px solid; padding: 25px 15px ; opacity: 0.3;}
-#skin-mbti h2 {text-align: center; color: #007bff; font-size: 26px;}
+#skin-mbti h2 {text-align: center; color: var(--main-color); font-size: 26px;}
 #skin-mbti .question-box ul li {margin-bottom: 5px; position: relative; text-align: left; }
-#skin-mbti .question-box ul li strong {font-size: 20px; margin-bottom: 25px; display: block;color: #007bff;}
+#skin-mbti .question-box ul li strong {font-size: 20px; margin-bottom: 25px; display: block;color: var(--main-color);}
 #skin-mbti .question-box ul li label{ display: block;background-color:transparent; width: auto; height: 36px;text-align: left; line-height: 38px; padding-left: 20px;}
-#skin-mbti .question-box ul li input {position: absolute; }
-#skin-mbti .question-box ul li input:checked + label{ background-color: #007bff; color: #fff; font-weight: 600;}
+#skin-mbti .question-box ul li input {position: absolute;}
+#skin-mbti .question-box ul li input:checked + label{ background-color: var(--main-color); color: #fff; font-weight: 600;}
 #skin-mbti .question-box .submit {border: 1px solid #696969; display: block; width: 100%; height: 33px; margin: 0 auto;}
-.section_name_A__list input:radio:checked {background-color: yellow;}
-.done {height: 0px; overflow: hidden;}
-.transparent {opacity: 1 !important;;}
+#skin-mbti .done {height: 0px; overflow: hidden;}
+#skin-mbti .transparent {opacity: 1 !important;}
+#skin-mbti .ready{background-color: var(--main-color); color: #fff; font-weight: 600;}
+
+
+#ctrl-box .active{display: block;}
+.prev , .next {position: fixed; top: 50%; background-color: aqua; display: none;} 
+.next {right:  5%;}
+.prev {left: 5%;}
 </style>  
 
 
 <br>
 <br>
 <hr>
-<ul id="stage-state"></ul>
-<div id="skin-mbti"></div>
+<div id="mbti-variable">
+  <ul id="stage-state"></ul>
+  <div id="skin-mbti"></div>
+
+
+  <div id="ctrl-box">
+    <div class="prev">prev</div>
+    <div class="next">next</div>
+  </div>
+</div>
 
 <br>
 <br>
-<button class="next">next</button>
-<button class="del">delcookie</button>
-<button class="get">getcookie</button>
+
 
 
   <script src="./data.js"></script>
@@ -76,74 +95,111 @@ ul {margin: 0 0 20px 0; padding: 0; }
             return unescape(y);
         }
     }
-  }
 
+  }
   /*-------------------------------------요소 생성----------------------------------------------*/
 
 //진행 스테이지 표시창 생성
-  const createStageBar = (stageBox,data) => {
+  const createStageBar = (stageBox) => {
     var html = "";
+    html += `<div class="gauge-box"><div class="gauge"></div></div>`
+    html += `<ul class="title-box">`
 
-    data.forEach(({section_id , section_name}) => {
+    QUESTION_DATA.forEach(({section_id , section_name}) => {
       html += `<li data-id=${section_id} >${section_name}</li>`
     })
+    html += '</ul>'
     stageBox.insertAdjacentHTML('beforeend',html);
 
-    return {
-      update : (id = "OD") => {
-        console.log(id)
-        var currntStageIdx = data.findIndex(({section_id})=> section_id === id);
-        var stages = [...stageBox.children];
+    var gauge = document.querySelector('.gauge')
+    var qsLength = QUESTION_DATA.reduce((acc , {data}) => acc + data.length ,0)
+    var pcs = 1 / qsLength * 100;
+    var percent = 0;
 
-        stages.forEach(li => li.style.background = "#fff")
-        stages.forEach((li,i) => {
-          if (i <= currntStageIdx - 1) {
-            li.style.background = "#007bff";
-          }
-        })
-      }
+
+    return {
+      addGauge : (boolean = false) => {
+        if(boolean){
+          percent += pcs;
+          gauge.style.width = `${percent}%`
+        }
+      },
+      setGauge : _ => {
+        var checkedList = document.querySelectorAll("input[type=radio]:checked")
+        checkedList.forEach( _ => percent += pcs);
+        gauge.style.width = `${percent}%`;
+      } 
     }
   }
-  var stageBar = createStageBar(document.querySelector('#stage-state'),QUESTION_DATA)
+  var guageBox = createStageBar(document.querySelector('#stage-state'));
 
-  //폼 요소 생성 
+  //폼 요소 생성   
   const createForm = ({section_id, section_name, data}, wrap) => {
     var html = "";
-    html += `<section id=${section_id + "section"}>`
-    html += `<h2 class="stage-title" data-id=${section_id}>${section_name}</h2>`;
-    html += `<div class="question-box" class="section-box">`;
+    var idx = QUESTION_DATA.findIndex((obj) => obj.section_id === section_id)
 
-    data.forEach(({id, question, option},i) => {
+    html += `<section id=${section_id + "section"} data-id=${section_id}>`
+    html += `<h2 class="stage-title">${section_name}</h2>`;
+    html += `<div class="question-box ${section_id}box">`;
 
-    
-        html += `<ul class=${"ul-"+section_id+id}>`;
+    data.forEach(({id, question, option}) => {
+        html += `<ul>`;
         html += `<li><strong>${id+"."+question}</strong></li>`;
 
         option.forEach(({no, option_text}) => {
           html += "<li>";
-          html += `<input id=${section_id+id+no} type="radio" value="${no}" name="${section_id+id}" hidden/>`;
+          html += `<input id=${section_id+id+no} type="radio" value="${no}" name="${idx+section_id+id}" hidden/>`;
           html += `<label for=${section_id+id+no}>${option_text}</label>`;
           html += "</li>";
         })
         html += "</ul>";
     })
-    html += `<button class='submit' data-id=${section_id}>NEXT</button>`
+    html += `<button class='submit' data-id=${section_id}> ${(idx + 1 >= QUESTION_DATA.length) ? "SUBMIT" : "NEXT" }</button>`
     html += "</div></section>";
+
     wrap.insertAdjacentHTML('beforeend',html);
-
-    return document.getElementById(section_id + "section");
+  
+    return {
+      newSection : document.getElementById(section_id + "section"),
+      get newUl(){return this.newSection.querySelector(".question-box")}
+    };
   }
- 
 
-/*---------------------------------------기능함수-----------------------------------------*/
+/*------------------------observer-------------------------------*/
+const ioFn = (entries) => {
+  entries.forEach((entry) => {
+    if (entry.intersectionRatio > 0) {
+      entry.target.classList.add("transparent");
+    }
+    else {
+      entry.target.classList.remove("transparent");
+    }
+  });
+}
+const ioOpt = {
+  root: null,
+  rootMargin: "-48% 0px",
+  threshold:0,
+}
+const io = new IntersectionObserver(ioFn,ioOpt)
+
+const stickyOpserves = (targets) => {
+  [...targets].forEach( tar => {
+    if (tar.tagName === "UL") {
+      io.observe(tar)
+    }
+  })
+}
+/*---------------------------------------기능함수--기능함수 내에 기능함수 X---------------------------------------*/
 
 //쿠키 데이터 담아서 보내기 
   const sendParamsToCookie = () => {
     var isHistory = getCookie(COOKIE_OPTION.history.name) 
     var params = isHistory ?  new URLSearchParams(isHistory) : new URLSearchParams() 
 
-    return (key , value) => {
-      if(!key || !value) return
+    return (key , value = 0) => {
+      if(!key) return
+      console.log(key,value)
 
       params.set(key,value)
       params.sort();
@@ -151,13 +207,8 @@ ul {margin: 0 0 20px 0; padding: 0; }
     }
   }
   let sendParams = sendParamsToCookie()
-  //상품 전체 체크 확인 
-  const checkPass = ({section_id ,data}) => {
-    var mapRadio = data.map(obj => [...document.getElementsByName(section_id + obj.id)])
-    var checkSelect = mapRadio.every(radioArr => radioArr.find(radio => radio.checked === true));
 
-    return checkSelect
-  }
+
   //진행중 쿠키에 기록된 내용 체크 //마지막 ul 태그 반환
   const recoveryChecked = (cookieData) => {
     var params = new URLSearchParams(cookieData);
@@ -165,54 +216,124 @@ ul {margin: 0 0 20px 0; padding: 0; }
       var lastTarget
       for (const [key, value] of params.entries()) {
         var inputs = [...document.getElementsByName(key)]
-        var checkTarget = inputs.find(input => input.value === value)
-        checkTarget.checked = true
-        lastTarget = checkTarget;
+        
+        if (value != 0) {
+          var checkTarget = inputs.find(input => input.value === value)
+          checkTarget.checked = true
+          lastTarget = checkTarget;
+        } else {
+          lastTarget = inputs[0];
+        }
+        
       }
-
-      return lastTarget.parentElement.parentElement
+      
+      return {
+        lastSection : document.getElementById(lastTarget.name.replace(/[0-9]/ig,"") + "section"),
+        get lastQBox(){return this.lastSection.querySelector(".question-box")},
+        lastUl :  lastTarget.parentElement.parentElement
+      };
   }
+
+   //상품 전체 체크 확인 
+  const checkPass = ({section_id ,data}) => {
+
+    var qBox = [...document.querySelector(`.${section_id}box`).children]; 
+    var filterUls = qBox.filter(ul => ul.tagName === "UL");
+    var checkSelect = filterUls.every(ul=> ul.querySelector('input[type=radio]:checked'));
+
+    return checkSelect
+  }
+
   //점수 계산
   const calcScore = ({section_id ,data}) =>{
-  var mapRadio = data.map(obj => [...document.getElementsByName(section_id + obj.id)])
-  var score = 0;
 
-  var filterRadio = mapRadio.flat(1).filter(radio => radio.checked === true)
-  score += filterRadio.reduce((acc,curr) => acc + QUESTION_SCORE[curr.value],0)
-  console.log("타입 :",QUESTION_TYPE[section_id](score),"--","점수 :",score)//result 
+    var qBox = [...document.querySelector(`.${section_id}box`).children];
+    var score = qBox
+    .filter(ul => ul.tagName === "UL")
+    .map(ul => ul.querySelector('input[type=radio]:checked').value)
+    .reduce((acc,curr) => acc + QUESTION_SCORE[curr],0)
 
-  return score
+    return score
   }
+
   //요소 맨위로 스크롤
-  const scrollIntoSectionTop = (el) => {
+  const scrolltoBoxTop = (el) => {
     if(!el) return
     var stickyH = document.getElementById('stage-state').offsetHeight;
     var targetY = el.offsetTop;
+
     window.scrollTo(0,targetY - stickyH);
   }
+
   //요소 중심으로 스크롤
-  const scrollIntoSectionMiddle= (el) => {
+  const scrolltoBoxMiddle= (el) => {
     if(!el) return
     var stickyH = document.getElementById('stage-state').offsetHeight;
     var targetHalf = el.offsetHeight / 2;
     var targetY = el.offsetTop;
     var screenHalf = window.innerHeight / 2;
+
     window.scrollTo(0,targetY + targetHalf - stickyH - screenHalf);
   }
-  //opacity 토글 
-  const toggleOpacity = (el) => {
-    var uls = [...el.parentElement.children]
-    uls.forEach(ul => ul.classList.remove('transparent'))
-    el.classList.add('transparent')
-  }
-  //가장 근접한 체크안된 문항 요소 반환 
-  const focusLastEl = (ul) => {
-    var uls = [...ul.parentElement.children]
-    var lastEl = uls.find((ul,i) => {
-      var inputs = [...ul.querySelectorAll('input')]
-      return inputs.every(input =>input.checked === false)
+
+
+  //section 보이기 / 숨기기 
+  const visibleSection = (visibleSection) => {
+    const sections = [...document.getElementById('skin-mbti').children];
+    sections.forEach(section => {
+      if (section.id.includes(visibleSection.id)) {
+        section.classList.remove('done')
+      } 
+      else {
+        section.classList.add('done')
+      }
     })
-    return lastEl
+  }
+
+  //체크안된 근접한 questionBox 반환 //전부 체크시 버튼 활성화
+  const getUnchecked = (qBox) => {
+    if(!qBox) return
+    var uls = [...qBox.children].filter(el => el.tagName === "UL");
+    var mapInputs = uls.map(ul => ul.querySelector('input[type=radio]:checked'));
+    var lastIdx = mapInputs.findIndex(input => !input);
+
+    if ( lastIdx === -1){
+      qBox.querySelector('.submit').classList.add('ready')
+    }
+
+    return uls[lastIdx] || uls.at(-1);
+  }
+
+  //테마색 변경 
+  const setThemeColor = (id) => {
+    document.getElementById("mbti-variable").style.setProperty("--main-color", THEME_COLOR[id]);
+  }
+
+  //스테이지 이동버튼 활성화
+  const updateMoveStageBtn = (section) => {
+    var nextSec = section.nextElementSibling;
+    var prevSec = section.previousElementSibling;
+    var pBtn = document.querySelector('#ctrl-box > .prev')
+    var nBtn = document.querySelector('#ctrl-box > .next')
+ 
+    if(prevSec){
+      var matchData =  QUESTION_DATA.find(obj => obj.section_id === prevSec.dataset.id)
+      pBtn.textContent = matchData.section_name;
+      pBtn.classList.add("active")
+    } 
+    else {
+      pBtn.classList.remove("active")
+    } 
+
+    if (nextSec) {
+      var matchData =  QUESTION_DATA.find(obj => obj.section_id === nextSec.dataset.id)
+      nBtn.textContent = matchData.section_name;
+      nBtn.classList.add("active")
+    } 
+    else {
+      nBtn.classList.remove("active")
+    }
+
   }
 
 /*DOM-root --------------------------------------------------------------------------------*/
@@ -223,163 +344,183 @@ ul {margin: 0 0 20px 0; padding: 0; }
 const loadBranch = _ => {
   var getHistory = getCookie(COOKIE_OPTION.history.name);
 
-  if (getHistory) { //저장되어 있는 정보 있을때
-    var score = new URLSearchParams(getHistory);
+  if (getHistory) { 
+    //저장 정보 O
+    var history = new URLSearchParams(getHistory);
 
-    for (const [key] of score.entries()) {
+    for (const [key] of history.entries()) {
       QUESTION_PROGRESS_STATE[key.replace(/[0-9]/ig,"")] = true;
     }
 
     var lastSection;
     QUESTION_DATA.forEach((data , i) => {
       if(QUESTION_PROGRESS_STATE[data.section_id]){
-        var form = createForm(data,mbtiWrap);
-        form.classList.add("done")
-        lastSection = form
-        data.section_id + "section"
-        stageBar.update(data.section_id)
+        var {newSection} = createForm(data,mbtiWrap);
+        lastSection = newSection
       }
     })
     
-    lastSection.classList.remove("done")
-    var lastEl = recoveryChecked(getHistory)
-    scrollIntoSectionMiddle(lastEl.nextElementSibling)
-    toggleOpacity(lastEl.nextElementSibling)
-    console.log("load save")
+    var {lastQBox} = recoveryChecked(getHistory)
+    var uncheckedQBox = getUnchecked(lastQBox)
 
-  } //history
-  else { //저장 정보 X
-    var newform = createForm(QUESTION_DATA[0],mbtiWrap)
-    toggleOpacity(newform.querySelector('.question-box').firstElementChild)
-    console.log("new")
+    visibleSection(lastSection)
+    stickyOpserves(lastQBox.children)
+    scrolltoBoxMiddle(uncheckedQBox)
+    updateMoveStageBtn(lastSection)
+    setThemeColor(lastSection.dataset.id)
+    guageBox.setGauge()
+  }
+  else { 
+    //저장 정보 X
+    var {newUl} = createForm(QUESTION_DATA[0],mbtiWrap)
+    stickyOpserves(newUl.children)
   }
 }
 loadBranch()
 
 
-//title 버튼 분기
-const btnBranch = (e) => {
-    if (e.target.className !== "stage-title")  return
-
-    var boxes = document.querySelectorAll('.question-box')
-
-    if (boxes.length > 1) {
-      boxes.forEach(box => {
-        if (box.parentElement.id.includes(e.target.dataset.id + "section")) {
-          stageBar.update(e.target.dataset.id)
-          box.classList.remove('done')
-        }
-        else{
-          box.classList.add('done')
-        }
-      })
-    }
-}
-
-
-//check Box 버튼 콜백 함수
-const checkBranch = (e) => {
-  if(e.target.type !== "radio") return 
-
-  const ul = document.querySelector('.ul-' + e.target.name)
-  sendParams(e.target.name,e.target.value)
-  
-  if (ul.nextElementSibling.tagName !== "button") {
-    var noneCheckedEl = focusLastEl(ul)
-    scrollIntoSectionMiddle(noneCheckedEl);
-    toggleOpacity(noneCheckedEl)
-  }
-}
-
-//NEXT 버튼 분기
+//NEXT/SUBMIT 버튼 분기
 const submitBranch = (e) => {
   if(e.target.tagName !== "BUTTON") return
   var submitId = e.target.dataset.id;
-  var finish = false;
-  QUESTION_DATA.forEach((data,i,arr) => {
+
+  QUESTION_DATA.forEach((data,i) => {
+
     if(submitId === data.section_id && checkPass(data)){
-      //전부 체크
-      var section = document.querySelector("#" + data.section_id + "section .question-box" )
-      var nextSection = document.querySelector( "#" + arr[i + 1]?.section_id + "section .question-box")
-      section.classList.add("done")
-      
-      if (i < arr.length - 1 && !nextSection) { // 다음 스테이지가 활성화 되지 않을때 
-        var newSection = createForm(arr[i + 1],mbtiWrap);
-        var firstQuestionBox  = newSection.querySelector('.question-box').firstElementChild
 
-        scrollIntoSectionTop(newSection)
-        toggleOpacity(firstQuestionBox)
-        stageBar.update(arr[i + 1].section_id)
+      var nextSection = document.querySelector( `#${QUESTION_DATA[i + 1]?.section_id}section`)
+    
+      if (i < QUESTION_DATA.length - 1 && !nextSection) {
+        // 진행중인 다음 스테이지 없음
+        var { newSection , newUl } = createForm(QUESTION_DATA[i + 1],mbtiWrap);
+        var firstName = (i + 1) + newSection.dataset.id + "1";
+        visibleSection(newSection)
+        sendParams(firstName)
+        scrolltoBoxTop(newSection)
+        stickyOpserves(newUl.children)
+        updateMoveStageBtn(newSection)
+        setThemeColor(newSection.dataset.id)
       } 
-      else if(nextSection){ // 다음 스테이지가 활성화 되어있음 
-          nextSection.classList.remove('done')
-          stageBar.update(arr[i + 1].section_id)
+      else if (i < QUESTION_DATA.length - 1 && nextSection){
+        // 진행중인 다음 스테이지 있음
+        scrolltoBoxTop(nextSection)
+        updateMoveStageBtn(nextSection)
+        setThemeColor(nextSection.dataset.id)
       }
-      else if (i === arr.length - 1){ //설문 끝
-        finish = true 
-        return
-      }
+      else if (i === QUESTION_DATA.length - 1){ 
+        // 끝 결과출력
+        var type = QUESTION_DATA.map(data => QUESTION_TYPE[data.section_id](calcScore(data))).join("")
+        var scoreParams = new URLSearchParams();
 
+        QUESTION_DATA.forEach( data => scoreParams.set(data.section_id , calcScore(data)))
+        delCookie(COOKIE_OPTION.history.name);
+        setCookie(COOKIE_OPTION.result.name, type, COOKIE_OPTION.result.time);
+
+        location.href = `/result.html?type=${type}&score=${scoreParams.toString()}`;
+      }
     } 
     else if(submitId === data.section_id && !checkPass(data)){
       console.log("error")
     }
+  }) //forEach
 
-  })
-
-  if(finish){ //점수랑 등급 쿼리 url 붙여서 보내고, 타입 쿠키로 저장
-      var type = "";
-      var score = new URLSearchParams();
-      QUESTION_DATA.forEach(data =>{
-        type += QUESTION_TYPE[data.section_id](calcScore(data)) //임시
-        score.set(data.section_id,calcScore(data));
-      })
-        
-        delCookie(COOKIE_OPTION.history.name)
-        setCookie(COOKIE_OPTION.result.name, type, COOKIE_OPTION.result.time)
-        location.href = `/result.html?type=${type}&score=${score.toString()}`;
-  }
 } //submitBranch
 
 
+//(onChange) radio-checkBox버튼 콜백함수
+const checkRadioFn = (e) => {
+  if(e.target.type !== "radio") return 
+  var qBox = document.querySelector(`.${e.target.name.replace(/[0-9]/g,"")}box`)
+  var uncheckedQBox = getUnchecked(qBox)
+  scrolltoBoxMiddle(uncheckedQBox);
+  sendParams(e.target.name , e.target.value);
+}
+
+//(mousedown) 콜백함수 //체크 시 checked 되기 전 false 값 받기위해 mousedown 사용 
+var blockDbClick
+const mouseDownFn = (e) => {
+  if(e.target.tagName !== "LABEL" ) return 
+  var name = e.target.previousSibling.name
+    
+  if (name !== blockDbClick) {
+    var inputs =  [...document.getElementsByName(name)];
+    var firstCheck = inputs.every(input => input.checked === false);
+    guageBox.addGauge(firstCheck)
+  }
+
+  blockDbClick = name;
+}
+
 /*--------------------------------------이벤트-------------------------------------------------*/
-  mbtiWrap.addEventListener('change',checkBranch)
+  
+  mbtiWrap.addEventListener('change',checkRadioFn)
+  mbtiWrap.addEventListener('mousedown', mouseDownFn)
   mbtiWrap.addEventListener('click', e => {
     btnBranch(e)
     submitBranch(e)
   })
-  //test 
-document.querySelector('.del').addEventListener('click',()=>{delCookie('skintype')})
-document.querySelector('.get').addEventListener('click',()=>{console.log(getCookie('skintype'))})
 
-/*------------------------observer-------------------------------*/
+  document.getElementById("ctrl-box").addEventListener("click",(e)=>{
+    const currSec = document.querySelector('#skin-mbti > section:not(.done)');
+    var nextSec = currSec.nextElementSibling
+    var prevSec = currSec.previousElementSibling
 
-const ioFn = (entries) => {
-  entries.forEach((entry) => {
-    console.log(entry)
-    if (entry.intersectionRatio > 0) {
-      entry.target.classList.add("active");
-    }
-    else {
-      entry.target.classList.remove("active");
-    }
-  });
-}
+    if(e.target.className.includes("prev") && prevSec){
 
-const ioOpt =  {
-  root: null,
-  rootMargin: "0px",
-}
+      visibleSection(prevSec)
+      var uncheckedQBox = getUnchecked(prevSec.querySelector('.question-box'))
+      scrolltoBoxMiddle(uncheckedQBox)
+      setThemeColor(prevSec.dataset.id)
+      updateMoveStageBtn(prevSec)
+    } 
+    else if (e.target.className.includes("next") && nextSec){
 
-const questionBoxes = mbtiWrap.querySelectorAll('.question-box')
-const io = new IntersectionObserver(ioFn,ioOpt)
-questionBoxes.forEach(boxes => {
-  [...boxes.children].forEach(box => {
-    if (box.tagName === "UL") {
-    io.observe(box)
+      visibleSection(nextSec)
+      var uncheckedQBox = getUnchecked(nextSec.querySelector('.question-box'))
+      scrolltoBoxMiddle(uncheckedQBox)
+      setThemeColor(nextSec.dataset.id)
+      updateMoveStageBtn(nextSec)
     }
   })
-})
+
+
+
+
+
+
+
+
+//안쓰는거 
+
+
+    //opacity 토글 
+    const toggleOpacity = (el) => {
+    var uls = [...el.parentElement.children]
+    uls.forEach(ul => ul.classList.remove('transparent'))
+    el.classList.add('transparent')
+  }
+
+
+
+  //title 버튼 분기
+const btnBranch = (e) => {
+    if (e.target.className !== "stage-title") return
+
+    var boxes = document.querySelectorAll('.question-box')
+
+    if (boxes.length > 1) {
+
+      boxes.forEach(box => {
+        if (box.parentElement.id.includes(e.target.dataset.id + "section")) {
+
+          updateStageBar(e.target.dataset.id)
+          visibleSection(box)
+        }
+      })
+    }
+}
+
+
   </script>
 </body>
 </html>
