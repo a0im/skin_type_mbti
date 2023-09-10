@@ -61,7 +61,7 @@ const QUESTION_TYPE = {
 const QUESTION_DATA = [
   {
     section_id:"OD",
-    section_name : "PART1",
+    section_name : "DRY",
     data : [
       {
         id:1,

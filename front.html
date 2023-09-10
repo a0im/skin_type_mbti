@@ -3,21 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>front</title>
 </head>
 <body>
   <style>
+    #skin-mbti-front{max-width: 1400px; width: 80%; margin: 0 auto;}
+
     #front-page {margin: 0 auto; width: 80%;text-align: center;}
     #front-page ul {padding: 0;}
     #front-page li {list-style: none; width: 100%; background-color: #ffc107; height: 30px; line-height: 30px; margin-bottom: 10px;}
     #front-page a {text-decoration: none; display: block; color: #333; font-weight: 600;  height: 100%;}
   </style>
-  <div id="front-page">
-    <h1>skin-type-test</h1>
-    <div class="before-result"></div>
-    <div class="description">문항수 000 문항 검사 시간은 25분정도 소요됩니다 어쩌구</div>
-    <ul class="front-page__btns"></ul>
-  </div>
+
+  <div id="apps"></div>
+
 
   <script src="./data.js"></script>
   <script>
@@ -48,8 +47,60 @@
     }
   }
 
-
    //시작 페이지 버튼 생성
+  const createFrame = () => {
+    const apps = document.getElementById("apps");
+    var saveTest = getCookie(COOKIE_OPTION.history.name);
+    var saveResult = getCookie(COOKIE_OPTION.result.name);
+    var html = "";
+    var btns = "";
+    var img =  "";
+
+      if (saveTest) {
+        btns += `<div class="continue"><a href="/test.html">진행중인 검사 이어하기</a></div>`
+      } 
+      if (saveResult) {
+        btns += `<div class="products"><a href=/result.html?${btoa('type=' + saveResult)}>${saveResult}타입 관련상품 보러가기</a></div>`
+        
+        img += '<strong>이전결과</strong>'
+        img += `<div class="prev-img"><a><img src="${QUESTION_TYPE_IMAGE[saveResult]}"/></a><div>`
+      }
+      btns += `<div class="new"><a href="javascript:void(0)">${ saveTest || saveResult?"새롭게 진행하기":"테스트 시작하기"}</a></div>`
+  
+
+    html += "<div id='skin-mbti-front'>"
+    html +=   "<h1>SKIN TYPE TEST</h1>"
+    html +=   "<div id='des-box'>문항수 200개 25분 소요댐 </div>"
+    html +=   `<div id='prev-result-box'>${img}</div>`
+    html +=   `<div id='btn-box'>${btns}</div>`
+    html += "</div'>"
+
+    apps.insertAdjacentHTML('beforeend',html)
+  }
+  createFrame()
+
+
+
+  document.querySelector('.new').addEventListener('click',()=>{
+        delCookie(COOKIE_OPTION.history.name)
+        delCookie(COOKIE_OPTION.result.name)
+        location.href = '/test.html'
+  }) 
+
+
+
+
+
+
+
+
+
+
+
+
+  //사용안함
+
+
   const createStartBtn = (btnBox,resultBox) => {
     var html = "";
 
@@ -83,7 +134,7 @@
       }) 
 
   }
-  createStartBtn(document.querySelector('.front-page__btns'),document.querySelector('.before-result'))
+ // createStartBtn(document.querySelector('.front-page__btns'),document.querySelector('.before-result'))
 
 
 

@@ -3,78 +3,117 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>result</title>
 </head>
 <body>
   <style>
-    #result-area {margin: 0 auto; width: 80%;text-align: center;}
-    #result-area ul {padding: 0;}
-    #result-area li {list-style: none; width: 100%; background-color: #ffc107; height: 30px; line-height: 30px; margin-bottom: 10px;}
-    #result-area a {text-decoration: none; display: block; color: #333; font-weight: 600;  height: 100%;}
+    #skin-mbti-result {margin: 0 auto; width: 80%;text-align: center; max-width: 1400px;}
+    #img-box img {width: 270px;}
+    #info-box {max-width: 270px; margin : 5px auto 0 auto;}
+    #info-box .title{min-width: 50px; margin-right: 10px; text-align: left;}
+    #info-box > div {display: flex; align-items: center; justify-content: left;}
+    #info-box .gauge-wrap { background: #efefef; height: 10px; width: 100%;}
+    #info-box .gauge-wrap > .gauge {height: 100%; background-color: #efefef; width: 0px; transition: all ease-in 1000ms;}
 
+    #fn-box {display: flex; justify-content: center; margin-top: 30px; gap: 40px;}
+    #fn-box img {width: 100%;}
+    #fn-box .clip{width: 40px; height: 40px;}
+    #fn-box .down{width: 48px; height: 40px;}
+
+    #btn-box { width: 270px; margin: 40px auto; }
+    #btn-box > div {list-style: none; width: 100%; background-color: #ffc107; height: 30px; line-height: 30px; margin-bottom: 10px;}
+    #btn-box > div > a {text-decoration: none; display: block; color: #333; font-weight: 600;  height: 100%;}
   </style>
-  <div id="result-area">
-    <div class="result-img"></div>
-    <div><a href="/front.html">처음 페이지 돌아가기</a></div>
-    <div class="clip">링크복사</div>
-    <div class="download"><a href="javascript:void(0)" download>download</a></div>
-  </div>
 
+  <div id="apps"></div>
 
   <script src="/data.js"></script>
   <script>
+    const createFrame = () => {
+      const apps = document.getElementById("apps");
+      var html = ""
 
+      var mapInfoList = QUESTION_DATA.map(({section_id , section_name}) => {
+        var list = ""
+        list += `<div class='${section_id}-score'>`
+        list +=   `<span class="title">${section_name}</span>`
+        list +=   `<div class="gauge-wrap"><div class="gauge" data-id=${section_id}></div></div>`
+        list += '</div>'
+        return list
+      })
+      .join("");
+
+      html += '<div id="skin-mbti-result">'
+      html +=   '<div id="img-box"></div>'
+      html +=   `<div id="info-box">${mapInfoList}</div>`
+      html +=   '<div id="fn-box">'
+      html +=     '<div class="clip"><img src="./img/clip.png" alt="clip"/></div>'
+      html +=     '<div class="down"><a href="javascript:void(0)" download><img src="./img/download.png" alt="download"/></</a></div>'
+      html +=   '</div>'
+      html +=   '<div id="btn-box">'
+      html +=     '<div class="location-front"><a href="/front.html">FRONT PAGE</a></div>'
+      html +=     '<div class="location-products"><a>MORE PRODUCTS</a></div>'
+      html +=   '</div>'
+      html +=   '<div id="products-box"></div>'
+      html += '</div>'
+
+      apps.insertAdjacentHTML("beforeend",html)
+    }
+    createFrame()
+
+    const calcPercent = (id,score) => {
+      var findDate = QUESTION_DATA.find(({section_id})=>id === section_id);
+      var maxScore = Math.max(...Object.values(QUESTION_SCORE));
+      var maxSectionScore = findDate.data.reduce( a => a + maxScore,0);
+      var percent = score/maxSectionScore * 100;
+
+      return percent
+    }
+
+        
 
     var decodeParams = atob(location.search.replace(/\?/i,""))
     const urlParams = new URLSearchParams(decodeParams);
-    for (const [key, value] of urlParams.entries()) {
-        //console.log(key,value)
+    const mapId = QUESTION_DATA.map(data => data.section_id);
+
+    const loadBranch = () =>{
+      for (const [key, value] of urlParams.entries()) {
 
         if(key === "type"){
-          var html = ""
-          var imgBox  = document.querySelector('.result-img')
-          var downBtn = document.querySelector('.download > a')
+
+          var imgBox  = document.getElementById('img-box')
+          var downBtn = document.querySelector('.down > a')
           var imgUrl = QUESTION_TYPE_IMAGE[value.toUpperCase()];
-          
-          downBtn.setAttribute('href',imgUrl)
-          html += `<a><img src="${imgUrl}"/><a/>`
+          var html = ""
 
+          html += `<a src="javascript:void(0)"><img src="${imgUrl}"/><a/>`
           imgBox.insertAdjacentHTML("beforeend",html)
-        } else {
+          downBtn.setAttribute('href',imgUrl)
+        } 
+        else if(mapId.includes(key)) {
 
-          
-          const findID = QUESTION_DATA.find(data =>data.section_id === key);
-          if (findID) {
-            console.log(key,value)
-          }
+          var gauges = [...document.querySelectorAll('#info-box .gauge')]
+          var targetG = gauges.find(g => g.dataset.id === key)
+          targetG.style.background = THEME_COLOR[key]
+          targetG.style.width = calcPercent(key,value) + "%"
         }
       }
+    }
 
+    window.addEventListener("load",loadBranch)
 
-//링크복사
-const clip = async() => {
-    console.log("copy")
-    await navigator.clipboard.writeText(location.href)
-}
-document.querySelector('.clip').addEventListener('click',clip)
+    //링크복사
+      const clip = async() => {
+        console.log("copy")
+        await navigator.clipboard.writeText(location.href)
+      }
+      document.querySelector('.clip').addEventListener('click',clip)
     
 
 
 
 
-
-
-
-
-
-//사용하지 않는것 
-
-function decodeUnicode(str) {
-  // Going backwards: from bytestream, to percent-encoding, to original string.
-  return decodeURIComponent(atob(str).split('').map(function (c) {
-    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
-}
+//사용하지 않음
 /*
 async function copy(){
       var url = location.href;

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>test</title>
 
 
 </head>
@@ -42,7 +42,6 @@ ul {margin: 0 0 20px 0; padding: 0; }
 
 <br>
 <br>
-<hr>
 <div id="apps"></div>
 <br>
 <br>
@@ -60,11 +59,13 @@ ul {margin: 0 0 20px 0; padding: 0; }
 
 
   /*
-    미구현
-    1.링크복사, 이미지저장
-    2. 상품 불러오기
-    3. 결과 , 진행도 % 
+    할것
+    0. 디자인
+    1. 상품 불러오기 
+    2.문항 번역
+    3.옵션 셋팅
     4.라우팅
+    5. 쿠키유지 
   */
   console.log(QUESTION_DATA)
 
@@ -103,26 +104,21 @@ ul {margin: 0 0 20px 0; padding: 0; }
     const apps = document.getElementById("apps");
     var html = ''
     html += '<div id="skin-mbti-test">'
-    html += '<div id="info-box"></div>'
-    html += '<div id="test-box"></div>'
-    html += '<div id="ctrl-box"><div class="prev"></div><div class="next"></div></div>'
+    html +=   '<div id="info-box"></div>'
+    html +=   '<div id="test-box"></div>'
+    html +=   '<div id="ctrl-box"><div class="prev"></div><div class="next"></div></div>'
     html += '</div>'
 
     apps.insertAdjacentHTML('beforeend',html)
   }
   createFrame()
 
+
   // 진행 스테이지 표시창 생성
   const createStageBar = (infoBox) => {
     var html = "";
     html += `<div class="gauge-box"><div class="gauge"></div></div>`
-    /*
-    html += `<ul class="title-box">`
-    QUESTION_DATA.forEach(({section_id , section_name}) => {
-      html += `<li data-id=${section_id} >${section_name}</li>`
-    })
-    html += '</ul>'
-    */
+
     infoBox.insertAdjacentHTML('beforeend',html);
 
     var gauge = document.querySelector('.gauge')
@@ -134,7 +130,7 @@ ul {margin: 0 0 20px 0; padding: 0; }
       addGauge : (boolean = false) => {
         if(boolean){
           percent += pcs;
-          gauge.style.width = `${percent}%`
+          setTimeout(()=>{gauge.style.width = `${percent}%`},120)
         }
       },
       setGauge : _ => {
@@ -158,16 +154,16 @@ ul {margin: 0 0 20px 0; padding: 0; }
     html += `<div class="question-box ${section_id}box">`;
 
     data.forEach(({id, question, option}) => {
-        html += `<ul>`;
-        html += `<li><strong>${id+"."+question}</strong></li>`;
+      html += `<ul>`;
+      html += `<li><strong>${id+"."+question}</strong></li>`;
 
-        option.forEach(({no, option_text}) => {
-          html += "<li>";
-          html += `<input id=${section_id+id+no} type="radio" value="${no}" name="${idx+section_id+id}" hidden/>`;
-          html += `<label for=${section_id+id+no}>${option_text}</label>`;
-          html += "</li>";
-        })
-        html += "</ul>";
+      option.forEach(({no, option_text}) => {
+        html += "<li>";
+        html += `<input id=${section_id+id+no} type="radio" value="${no}" name="${idx+section_id+id}" hidden/>`;
+        html += `<label for=${section_id+id+no}>${option_text}</label>`;
+        html += "</li>";
+      })
+      html += "</ul>";
     })
     html += `<button class='submit' data-id=${section_id}> ${(idx + 1 >= QUESTION_DATA.length) ? "SUBMIT" : "NEXT" }</button>`
     html += "</div></section>";
@@ -436,7 +432,7 @@ const submitBranch = (e) => {
 
         
         url += '/result.html?'
-        url += btoa(`type=${type}&score=${scoreParams.toString()}`)
+        url += btoa(`type=${type}&${scoreParams.toString()}`)
 
         location.href = url;
       }
