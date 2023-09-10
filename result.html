@@ -16,11 +16,58 @@
   <div id="result-area">
     <div class="result-img"></div>
     <div><a href="/front.html">처음 페이지 돌아가기</a></div>
-    <ul><li>링크복사</li></ul>
+    <div class="clip">링크복사</div>
+    <div class="download"><a href="javascript:void(0)" download>download</a></div>
   </div>
 
 
+  <script src="/data.js"></script>
   <script>
+
+
+    var decodeParams = atob(location.search.replace(/\?/i,""))
+    const urlParams = new URLSearchParams(decodeParams);
+    for (const [key, value] of urlParams.entries()) {
+        //console.log(key,value)
+
+        if(key === "type"){
+          var html = ""
+          var imgBox  = document.querySelector('.result-img')
+          var downBtn = document.querySelector('.download > a')
+          var imgUrl = QUESTION_TYPE_IMAGE[value.toUpperCase()];
+          
+          downBtn.setAttribute('href',imgUrl)
+          html += `<a><img src="${imgUrl}"/><a/>`
+
+          imgBox.insertAdjacentHTML("beforeend",html)
+        } else {
+
+          
+          const findID = QUESTION_DATA.find(data =>data.section_id === key);
+          if (findID) {
+            console.log(key,value)
+          }
+        }
+      }
+
+
+//링크복사
+const clip = async() => {
+    console.log("copy")
+    await navigator.clipboard.writeText(location.href)
+}
+document.querySelector('.clip').addEventListener('click',clip)
+    
+
+
+
+
+
+
+
+
+
+//사용하지 않는것 
 
 function decodeUnicode(str) {
   // Going backwards: from bytestream, to percent-encoding, to original string.
@@ -28,19 +75,6 @@ function decodeUnicode(str) {
     return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
   }).join(''));
 }
-
-
-    var decodeParams = atob(location.search.replace(/\?/i,""))
-    const urlParams = new URLSearchParams(decodeParams);
-    for (const [key, value] of urlParams.entries()) {
-        console.log(key,value)
-
-        if(key === "type"){
-          document.querySelector('.result-img').textContent = '결과 : ' +  value;
-        }
-      }
-
-
 /*
 async function copy(){
       var url = location.href;

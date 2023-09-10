@@ -62,7 +62,7 @@
       if (getCookie(COOKIE_OPTION.result.name)) {
         var resultType = getCookie(COOKIE_OPTION.result.name);
         var path = '/result.html/type?=' + resultType;
-        var resultImg = `<a><img src=${QUESTION_TYPE_IMAGE[resultType].toUpperCase()}/></a>`
+        var resultImg = `<a><img src="${QUESTION_TYPE_IMAGE[resultType.toUpperCase()]}"/></a>`
 
 
         html += `<li><a href=/result.html?${btoa('type=' + resultType)}>${getCookie(COOKIE_OPTION.result.name)}타입 관련상품 보러가기</a></li>`

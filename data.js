@@ -33,22 +33,22 @@ const QUESTION_PROGRESS_STATE = {
 }
 
 const QUESTION_TYPE_IMAGE = {
-  DRPT : "1image.jpg",
-  DRNT : "2image.jpg",
-  DSPT : "3image.jpg",
-  DSNT : "4image.jpg",
-  DRPW : "5image.jpg",
-  DRNW : "6image.jpg",
-  DSPW : "7image.jpg",
-  DSNW : "8image.jpg",
-  ORPT : "9image.jpg",
-  ORNT : "10image.jpg",
-  OSPT : "11image.jpg",
-  OSNT : "12image.jpg",
-  ORPW : "13image.jpg",
-  ORNW : "14image.jpg",
-  OSPW : "15image.jpg",
-  OSNW : "16image.jpg"
+  DRPT : "./img/004DSNT.jpg",
+  DRNT : "./img/004DSNT.jpg",
+  DSPT : "./img/004DSNT.jpg",
+  DSNT : "./img/004DSNT.jpg",
+  DRNW : "./img/004DSNT.jpg",
+  DRPW : "./img/004DSNT.jpg",
+  DSPW : "./img/004DSNT.jpg",
+  DSNW : "./img/004DSNT.jpg",
+  ORPT : "./img/004DSNT.jpg",
+  ORNT : "./img/004DSNT.jpg",
+  OSPT : "./img/004DSNT.jpg",
+  OSNT : "./img/004DSNT.jpg",
+  ORPW : "./img/004DSNT.jpg",
+  ORNW : "./img/004DSNT.jpg",
+  OSPW : "./img/004DSNT.jpg",
+  OSNW : "./img/004DSNT.jpg",
 }
 
 const QUESTION_TYPE = {
