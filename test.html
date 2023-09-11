@@ -24,15 +24,16 @@ ul {margin: 0 0 20px 0; padding: 0; }
 #test-box .question-box ul{border: #333 1px solid; padding: 25px 15px ; opacity: 0.3;}
 #test-box h2 {text-align: center; color: var(--main-color); font-size: 26px;}
 #test-box .question-box ul li {margin-bottom: 5px; position: relative; text-align: left; }
-#test-box .question-box ul li strong {font-size: 20px; margin-bottom: 25px; display: block;color: var(--main-color);}
-#test-box .question-box ul li label{ display: block;background-color:transparent; width: auto; height: 36px;text-align: left; line-height: 38px; padding-left: 20px;}
+#test-box .question-box .title {display: flex;}
+#test-box .question-box .title .num {font-size: 20px; color: var(--main-color); font-weight: 700; margin-right: 3px;}
+#test-box .question-box .title strong {font-size: 20px; margin-bottom: 25px; display: block;color: var(--main-color);}
+#test-box .question-box ul li label{ display: block;background-color:transparent; width: auto;text-align: left; padding: 10px 0 10px 20px;}
 #test-box .question-box ul li input {position: absolute;}
 #test-box .question-box ul li input:checked + label{ background-color: var(--main-color); color: #fff; font-weight: 600;}
-#test-box .question-box .submit {border: 1px solid #696969; display: block; width: 100%; height: 33px; margin: 0 auto;}
+#test-box .question-box .submit {background: #e5e5e5; border: none; display: block; width: 100%; height: 33px; margin: 0 auto; color:#c0c0c0;}
 #test-box .done {height: 0px; overflow: hidden;}
 #test-box .transparent {opacity: 1 !important;}
-#test-box .ready{background-color: var(--main-color); color: #fff; font-weight: 600;}
-
+#test-box .ready{background-color: var(--main-color)!important; color: #fff!important; font-weight: 600;}
 #ctrl-box .active{display: block;}
 .prev , .next {position: fixed; top: 50%; background-color: aqua; display: none;} 
 .next {right:  5%;}
@@ -104,7 +105,9 @@ ul {margin: 0 0 20px 0; padding: 0; }
     const apps = document.getElementById("apps");
     var html = ''
     html += '<div id="skin-mbti-test">'
-    html +=   '<div id="info-box"></div>'
+    html +=   '<div id="info-box">'
+    html +=     '<div class="gauge-box"><div class="gauge"></div></div>`'
+    html +=   '</div>'
     html +=   '<div id="test-box"></div>'
     html +=   '<div id="ctrl-box"><div class="prev"></div><div class="next"></div></div>'
     html += '</div>'
@@ -114,59 +117,36 @@ ul {margin: 0 0 20px 0; padding: 0; }
   createFrame()
 
 
-  // 진행 스테이지 표시창 생성
-  const createStageBar = (infoBox) => {
-    var html = "";
-    html += `<div class="gauge-box"><div class="gauge"></div></div>`
-
-    infoBox.insertAdjacentHTML('beforeend',html);
-
-    var gauge = document.querySelector('.gauge')
-    var qsLength = QUESTION_DATA.reduce((acc , {data}) => acc + data.length ,0)
-    var pcs = 1 / qsLength * 100;
-    var percent = 0;
-
-    return {
-      addGauge : (boolean = false) => {
-        if(boolean){
-          percent += pcs;
-          setTimeout(()=>{gauge.style.width = `${percent}%`},120)
-        }
-      },
-      setGauge : _ => {
-        var checkedList = document.querySelectorAll("input[type=radio]:checked")
-        checkedList.forEach( _ => percent += pcs);
-        gauge.style.width = `${percent}%`;
-      } 
-    }
-  }
-  var guageBox = createStageBar(document.querySelector('#info-box'));
-
-
-
   //스테이지 요소 생성   
   const createSection = ({section_id, section_name, data}, textBox) => {
     var html = "";
     var idx = QUESTION_DATA.findIndex((obj) => obj.section_id === section_id)
   
-    html += `<section id=${section_id + "section"} data-id=${section_id}>`
-    html += `<h2 class="stage-title">${section_name}</h2>`;
-    html += `<div class="question-box ${section_id}box">`;
+    var qBoxes = data.map(({id, question, options}) => {
+        var qBox = ""
+        qBox += "<ul>";
+        qBox += `<li class="title"><span class="num">${id+"."}</span><strong>${question}</strong></li>`;
 
-    data.forEach(({id, question, option}) => {
-      html += `<ul>`;
-      html += `<li><strong>${id+"."+question}</strong></li>`;
+        options.forEach(({no, option_text}) => {
+          qBox += "<li>";
+          qBox += `<input id=${section_id+id+no} type="radio" value="${no}" name="${idx+section_id+id}" hidden/>`;
+          qBox += `<label for=${section_id+id+no}>${option_text}</label>`;
+          qBox += "</li>";
+        })
+        qBox += "</ul>";
 
-      option.forEach(({no, option_text}) => {
-        html += "<li>";
-        html += `<input id=${section_id+id+no} type="radio" value="${no}" name="${idx+section_id+id}" hidden/>`;
-        html += `<label for=${section_id+id+no}>${option_text}</label>`;
-        html += "</li>";
-      })
-      html += "</ul>";
-    })
-    html += `<button class='submit' data-id=${section_id}> ${(idx + 1 >= QUESTION_DATA.length) ? "SUBMIT" : "NEXT" }</button>`
-    html += "</div></section>";
+        if(data.at(-1).id === id){
+          qBox += `<button class='submit' data-id=${section_id}> ${(idx + 1 >= QUESTION_DATA.length) ? "SUBMIT" : "NEXT" }</button>`
+        }  
+
+        return qBox
+    }).join("");
+
+
+    html += `<section id="${section_id}section" data-id=${section_id}>`
+    html +=  `<h2 class="stage-title">${section_name}</h2>`;
+    html +=  `<div class="question-box ${section_id}box">${qBoxes}</div>`;
+    html += "</section>";
 
     textBox.insertAdjacentHTML('beforeend',html);
   
@@ -289,6 +269,31 @@ const stickyOpserves = (targets) => {
   }
 
 
+    // 스테이지 게이지 업데이트
+    const updateGauge = () => {
+    
+    var gauge = document.querySelector('.gauge')
+    var qsLength = QUESTION_DATA.reduce((acc , {data}) => acc + data.length ,0)
+    var pcs = 1 / qsLength * 100;
+    var percent = 0;
+
+    return {
+      addGauge : (boolean = false) => {
+        if(boolean){
+          percent += pcs;
+          setTimeout(()=>{gauge.style.width = `${percent}%`},120)
+        }
+      },
+      setGauge : _ => {
+        var checkedList = document.querySelectorAll("input[type=radio]:checked")
+        checkedList.forEach( _ => percent += pcs);
+        gauge.style.width = `${percent}%`;
+      } 
+    }
+  }
+  var guageBox = updateGauge();
+
+
   //section 보이기 / 숨기기 
   const visibleSection = (visibleSection) => {
     const sections = [...visibleSection.closest('#test-box').children];
@@ -308,6 +313,7 @@ const stickyOpserves = (targets) => {
     var uls = [...qBox.children].filter(el => el.tagName === "UL");
     var mapInputs = uls.map(ul => ul.querySelector('input[type=radio]:checked'));
     var lastIdx = mapInputs.findIndex(input => !input);
+    console.log(lastIdx)
 
     if ( lastIdx === -1){
       qBox.querySelector('.submit').classList.add('ready')
